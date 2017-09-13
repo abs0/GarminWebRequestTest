@@ -1,25 +1,13 @@
 /*
- * Simple test app to demonstrate makeWebRequest() regression in 2.3.X SDK *nix simulator
- *
- * Based on the sample code provided by Garmin at
- * https://developer.garmin.com/downloads/connect-iq/monkey-c/doc/Toybox/Communications.html#makeWebRequest-instance_method
- * with the typo fixed (method named onReceieve but called as onReceive), and the stray ; which broke compilation removed
- *
- * If run under Windows or on a watch this returns a 302 from the request
- * If run under Mac/Linux on SDK 2.2.{1,2,3,4,5,6} it also returns 302
- * If run under Mac/Linux on SDL 2.3.{1,2,3,4} it, or in fact any makeWebRequest() returns 404
- *
- * No (c) or anything else asserted, other than a slightly bewildered wondering if anyone actually develops for Garmin on
- * non Windows platforms
- *
- * David Brownlee abs@absd.org
+ * Simple test app to demonstrate makeWebRequest() issue with https in SDK 2.3.{1,2,3,4} Mac simulator
+ * See README.md
  */
 using Toybox.Application as App;
 using Toybox.WatchUi as Ui;
 using Toybox.System;
 using Toybox.Communications;
 
-const URL = "https://www.garmin.com";
+const URL = "https://jsonplaceholder.typicode.com/posts/1";
 
 class GarminWebRequestTestApp extends App.AppBase {
 
@@ -48,23 +36,15 @@ class GarminWebRequestTestApp extends App.AppBase {
    }
 
    function makeRequest() {
-
-       var params = {                                              // set the parameters
-              "definedParams" => "123456789abcdefg"
+       var url = URL;
+       var params = null;
+       var options = {
+         :method => Communications.HTTP_REQUEST_METHOD_GET,
+         :responseType => Communications.HTTP_RESPONSE_CONTENT_TYPE_JSON
        };
+       var responseCallback = method(:onReceive);
 
-       var options = {                                             // set the options
-           :method => Communications.HTTP_REQUEST_METHOD_GET,      // set HTTP method
-           :headers => {                                           // set headers
-                   "Content-Type" => Communications.REQUEST_CONTENT_TYPE_URL_ENCODED},
-                                                                   // set response type
-           :responseType => Communications.HTTP_RESPONSE_CONTENT_TYPE_URL_ENCODED
-       };
-
-       var responseCallback = method(:onReceive);                  // set responseCallback to
-                                                                   // onReceive() method
-       // Make the Communications.makeWebRequest() call
-       Communications.makeWebRequest(URL, params, options, method(:onReceive));
+       Communications.makeWebRequest(url, params, options, method(:onReceive));
   }
 
 }
